@@ -117,8 +117,12 @@ void Copter::SurfaceTracking::update_surface_offset()
             // Get current altitude in meters
             const float current_alt_m = rf_state.alt_cm * 0.01f;
 
-            // Get tilt correction factor
-            const float tilt_correction = copter.rangefinder.get_tilt_correction(copter.ahrs.get_rotation_body_to_ned());
+            // Get tilt correction factor (same as in sensors.cpp)
+#if RANGEFINDER_TILT_CORRECTION == ENABLED
+            const float tilt_correction = MAX(0.707f, copter.ahrs.get_rotation_body_to_ned().c.z);
+#else
+            const float tilt_correction = 1.0f;
+#endif
 
             // Check if this is an obstacle (using runtime parameters)
             const bool is_obstacle = detect_obstacle_and_track_floor(
