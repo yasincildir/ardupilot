@@ -247,7 +247,27 @@ AVOID_MARGIN = 2.0       # 2m'de dur (1.0-3.0 arası ayarlanabilir)
 AVOID_BEHAVE = 1         # Stop behavior (0=Slide, 1=Stop)
 ```
 
-**5. Fence (FENCE_*):**
+**5. Indoor Altitude Hold (INDOOR_*) - YENİ! ⚙️:**
+```
+INDOOR_OBS_THR = 0.8     # Obstacle jump threshold (meters)
+                         # 0.8m'den büyük değişim = engel
+                         # Artır: Daha az hassas (1.0 = sadece büyük engeller)
+                         # Azalt: Daha hassas (0.6 = küçük engelleri de yakalar)
+
+INDOOR_FLR_RATE = 0.3    # Maximum floor change rate (m/s)
+                         # Hızlı değişim = engel, yavaş = gerçek zemin
+                         # Artır: Daha hızlı zemin değişimi kabul edilir (0.5)
+                         # Azalt: Daha fazla engel algılanır (0.2)
+```
+
+**💡 Runtime Tuning İpucu:**
+Bu parametreler **firmware rebuild gerektirmez**! Mission Planner'dan anında değiştirebilirsiniz:
+- Config → Full Parameter List
+- `INDOOR_OBS_THR` veya `INDOOR_FLR_RATE` ara
+- Değeri değiştir → Write Params
+- Test et!
+
+**6. Fence (FENCE_*):**
 ```
 FENCE_ALT_MAX = 3.0      # Tavan yüksekliğinize göre!
 FENCE_RADIUS = 10.0      # Oda boyutunuza göre!
@@ -255,27 +275,45 @@ FENCE_RADIUS = 10.0      # Oda boyutunuza göre!
 
 ### Fine-Tuning İpuçları:
 
+**✨ YENİ: Runtime Tuning (Firmware Rebuild Gerektirmez!)**
+
 **Altitude Hold Çok Hassas (Gereksiz Filtreleme):**
-```
-# surface_tracking.cpp'de threshold'u artır:
-#define OBSTACLE_JUMP_THRESHOLD_M 1.0f  // 0.8 → 1.0m
+```bash
+# Mission Planner → Config → Full Parameter List
+INDOOR_OBS_THR = 1.0     # 0.8 → 1.0m (daha az hassas)
+# Write Params → Reboot → Test
 ```
 
 **Altitude Hold Çok Agresif (Gerçek Zemini Atlıyor):**
+```bash
+# Mission Planner → Config → Full Parameter List
+INDOOR_FLR_RATE = 0.5    # 0.3 → 0.5 m/s (daha hızlı zemin değişimi kabul edilir)
+# Write Params → Reboot → Test
 ```
-# surface_tracking.cpp'de rate limit'i artır:
-#define MAX_FLOOR_CHANGE_RATE_MS 0.5f   // 0.3 → 0.5 m/s
+
+**Çok Küçük Engelleri de Yakalamak İstiyorsanız:**
+```bash
+INDOOR_OBS_THR = 0.6     # 0.8 → 0.6m (sandalye/sehpa gibi küçük mobilyalar)
+INDOOR_FLR_RATE = 0.2    # 0.3 → 0.2 m/s (daha katı)
 ```
 
 **Obstacle Avoidance Çok Erken Duruyor:**
-```
+```bash
 AVOID_MARGIN = 1.0       # 2.0 → 1.0m
 ```
 
 **Obstacle Avoidance Çok Geç Duruyor:**
-```
+```bash
 AVOID_MARGIN = 3.0       # 2.0 → 3.0m
 ```
+
+**💡 Test Workflow:**
+1. Parametreyi değiştir (Mission Planner)
+2. Write Params
+3. Reboot
+4. Test uçuş yap (mobilya üzerinden geç)
+5. Log analiz et
+6. Gerekirse tekrar ayarla
 
 ---
 

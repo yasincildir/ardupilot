@@ -215,18 +215,28 @@ ATC_SLEW_YAW,6000            # Yaw slew rate 60 deg/s (cd/s)
 ANGLE_MAX,3000               # Maximum lean angle 30 degrees (reduced from 45°)
 
 # ========================================
-# INDOOR ALTITUDE HOLD - CUSTOM SETTINGS
+# INDOOR ALTITUDE HOLD - OBSTACLE DETECTION
 # ========================================
-# These parameters are built into the code changes:
-# - OBSTACLE_JUMP_THRESHOLD = 0.8m
-# - OBSTACLE_HYSTERESIS_SAMPLES = 5
-# - MAX_FLOOR_CHANGE_RATE = 0.3 m/s
-# - FLOOR_TRACKING_TAU = 0.1s
-# - TILT_AGGRESSIVE_THRESHOLD = cos(30°) = 0.87
 
-# To disable obstacle detection, rebuild firmware with:
-# #define OBSTACLE_DETECTION_ENABLED 0
-# in surface_tracking.cpp
+# Obstacle Jump Threshold (meters)
+# Height change above this value = potential obstacle
+# Default: 0.8m (detects most furniture: beds, tables, sofas)
+# Increase: Less sensitive (0.8 → 1.0m = only large obstacles)
+# Decrease: More sensitive (0.8 → 0.6m = detects smaller bumps)
+INDOOR_OBS_THR,0.8
+
+# Maximum Floor Change Rate (m/s)
+# Maximum rate of valid floor height change
+# Faster changes = obstacle, slower = real floor change
+# Default: 0.3 m/s (allows gradual ramps/stairs)
+# Increase: Allows faster floor transitions (0.3 → 0.5 m/s)
+# Decrease: Treats more changes as obstacles (0.3 → 0.2 m/s)
+INDOOR_FLR_RATE,0.3
+
+# Fixed parameters (built into code):
+# - OBSTACLE_HYSTERESIS_SAMPLES = 5 (confirmation samples)
+# - FLOOR_TRACKING_TAU = 0.1s (smoothing time constant)
+# - TILT_AGGRESSIVE_THRESHOLD = cos(30°) = 0.87 (tilt detection)
 
 # ========================================
 # NOTES
