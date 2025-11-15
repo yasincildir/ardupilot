@@ -6,11 +6,11 @@
 
 // Obstacle detection thresholds and constants
 #define OBSTACLE_DETECTION_ENABLED 1
-#define OBSTACLE_JUMP_THRESHOLD_M 0.8f          // Height change > 0.8m considered potential obstacle
 #define OBSTACLE_HYSTERESIS_SAMPLES 5           // Require 5 consecutive samples to confirm floor change
-#define MAX_FLOOR_CHANGE_RATE_MS 0.3f           // Maximum 0.3 m/s floor change rate
 #define FLOOR_TRACKING_TAU 0.1f                 // Time constant for floor height smoothing (100ms)
 #define TILT_AGGRESSIVE_THRESHOLD 0.87f         // cos(30°) - use aggressive detection when tilted >30°
+
+// Note: INDOOR_OBS_THR and INDOOR_FLR_RATE are now runtime parameters (g2.indoor_obs_thr, g2.indoor_floor_rate)
 
 // Helper function: Detects obstacles vs floor changes using rate-of-change and hysteresis
 // Returns true if current measurement is likely an obstacle (should be filtered out)
@@ -21,7 +21,9 @@ static bool detect_obstacle_and_track_floor(
     uint32_t& last_floor_update_ms,
     uint32_t now_ms,
     float dt,
-    float tilt_correction)
+    float tilt_correction,
+    float obstacle_jump_threshold_m,
+    float max_floor_change_rate_ms)
 {
     if (!OBSTACLE_DETECTION_ENABLED) {
         return false;
@@ -29,8 +31,8 @@ static bool detect_obstacle_and_track_floor(
 
     // Tilt-aware threshold adjustment
     // When vehicle is tilted >30°, use more aggressive detection (lower thresholds)
-    float jump_threshold = OBSTACLE_JUMP_THRESHOLD_M;
-    float max_floor_rate = MAX_FLOOR_CHANGE_RATE_MS;
+    float jump_threshold = obstacle_jump_threshold_m;
+    float max_floor_rate = max_floor_change_rate_ms;
 
     if (tilt_correction <= TILT_AGGRESSIVE_THRESHOLD) {
         jump_threshold *= 0.7f;      // 0.8m → 0.56m
@@ -118,7 +120,7 @@ void Copter::SurfaceTracking::update_surface_offset()
             // Get tilt correction factor
             const float tilt_correction = copter.rangefinder.get_tilt_correction(copter.ahrs.get_rotation_body_to_ned());
 
-            // Check if this is an obstacle
+            // Check if this is an obstacle (using runtime parameters)
             const bool is_obstacle = detect_obstacle_and_track_floor(
                 current_alt_m,
                 rf_state.floor_height_estimate_m,
@@ -126,7 +128,9 @@ void Copter::SurfaceTracking::update_surface_offset()
                 rf_state.last_floor_update_ms,
                 now_ms,
                 0.05f,  // Assuming 20Hz update rate (50ms)
-                tilt_correction
+                tilt_correction,
+                copter.g2.indoor_obs_thr,       // Runtime parameter: obstacle jump threshold
+                copter.g2.indoor_floor_rate     // Runtime parameter: max floor change rate
             );
 
             // If detected as obstacle, use floor estimate instead of raw measurement

@@ -1249,6 +1249,22 @@ const AP_Param::GroupInfo ParametersG2::var_info2[] = {
     // @User: Advanced
     AP_GROUPINFO("FS_EKF_FILT", 8, ParametersG2, fs_ekf_filt_hz, FS_EKF_FILT_DEFAULT),
 
+    // @Param: INDOOR_OBS_THR
+    // @DisplayName: Indoor obstacle jump threshold
+    // @Description: Height change threshold in meters above which a rangefinder measurement is considered a potential obstacle rather than floor change. Used for indoor altitude hold to prevent jumps when flying over furniture. Increase to be less sensitive to obstacles, decrease to detect smaller obstacles.
+    // @Range: 0.3 2.0
+    // @Units: m
+    // @User: Standard
+    AP_GROUPINFO("INDOOR_OBS_THR", 9, ParametersG2, indoor_obs_thr, 0.8),
+
+    // @Param: INDOOR_FLR_RATE
+    // @DisplayName: Indoor maximum floor change rate
+    // @Description: Maximum rate of floor height change in m/s that is considered valid. Faster changes are treated as obstacles. Used to distinguish between gradual floor changes (ramps, stairs) and sudden obstacles (furniture). Increase for environments with rapid floor changes.
+    // @Range: 0.1 1.0
+    // @Units: m/s
+    // @User: Standard
+    AP_GROUPINFO("INDOOR_FLR_RATE", 10, ParametersG2, indoor_floor_rate, 0.3),
+
     // ID 62 is reserved for the AP_SUBGROUPEXTENSION
 
     AP_GROUPEND

@@ -702,6 +702,10 @@ public:
     AP_Float pldp_range_finder_minimum_m;
     AP_Float pldp_delay_s;
     AP_Float pldp_descent_speed_ms;
+
+    // Indoor Altitude Hold - Obstacle Detection Parameters
+    AP_Float indoor_obs_thr;        // obstacle jump threshold (meters)
+    AP_Float indoor_floor_rate;     // maximum floor change rate (m/s)
 };
 
 extern const AP_Param::Info        var_info[];
