@@ -1,5 +1,97 @@
 #include "Copter.h"
 
+// ========================================
+// Indoor Altitude Hold - Obstacle Detection
+// ========================================
+
+// Obstacle detection thresholds and constants
+#define OBSTACLE_DETECTION_ENABLED 1
+#define OBSTACLE_JUMP_THRESHOLD_M 0.8f          // Height change > 0.8m considered potential obstacle
+#define OBSTACLE_HYSTERESIS_SAMPLES 5           // Require 5 consecutive samples to confirm floor change
+#define MAX_FLOOR_CHANGE_RATE_MS 0.3f           // Maximum 0.3 m/s floor change rate
+#define FLOOR_TRACKING_TAU 0.1f                 // Time constant for floor height smoothing (100ms)
+#define TILT_AGGRESSIVE_THRESHOLD 0.87f         // cos(30°) - use aggressive detection when tilted >30°
+
+// Helper function: Detects obstacles vs floor changes using rate-of-change and hysteresis
+// Returns true if current measurement is likely an obstacle (should be filtered out)
+static bool detect_obstacle_and_track_floor(
+    float current_alt_m,
+    float& floor_height_estimate_m,
+    int8_t& obstacle_counter,
+    uint32_t& last_floor_update_ms,
+    uint32_t now_ms,
+    float dt,
+    float tilt_correction)
+{
+    if (!OBSTACLE_DETECTION_ENABLED) {
+        return false;
+    }
+
+    // Tilt-aware threshold adjustment
+    // When vehicle is tilted >30°, use more aggressive detection (lower thresholds)
+    float jump_threshold = OBSTACLE_JUMP_THRESHOLD_M;
+    float max_floor_rate = MAX_FLOOR_CHANGE_RATE_MS;
+
+    if (tilt_correction <= TILT_AGGRESSIVE_THRESHOLD) {
+        jump_threshold *= 0.7f;      // 0.8m → 0.56m
+        max_floor_rate *= 0.7f;      // 0.3 m/s → 0.21 m/s
+    }
+
+    // Initialize floor estimate on first run
+    if (last_floor_update_ms == 0) {
+        floor_height_estimate_m = current_alt_m;
+        last_floor_update_ms = now_ms;
+        obstacle_counter = 0;
+        return false;
+    }
+
+    const uint32_t time_since_update_ms = now_ms - last_floor_update_ms;
+    if (time_since_update_ms == 0) {
+        return false;  // Avoid division by zero
+    }
+    const float time_since_update_s = time_since_update_ms * 0.001f;
+
+    const float delta_m = current_alt_m - floor_height_estimate_m;
+
+    // Check if this is a significant jump
+    if (fabsf(delta_m) > jump_threshold) {
+        // Calculate rate of change
+        const float floor_change_rate_ms = fabsf(delta_m) / time_since_update_s;
+
+        if (floor_change_rate_ms > max_floor_rate) {
+            // Too fast = likely obstacle
+            obstacle_counter = MIN(obstacle_counter + 1, OBSTACLE_HYSTERESIS_SAMPLES + 1);
+        } else {
+            // Gradual change = likely real floor change
+            obstacle_counter = MAX(obstacle_counter - 1, -(OBSTACLE_HYSTERESIS_SAMPLES + 1));
+        }
+
+        // Hysteresis: require consecutive samples to confirm
+        if (obstacle_counter >= OBSTACLE_HYSTERESIS_SAMPLES) {
+            // Confirmed obstacle - keep returning true
+            return true;
+        } else if (obstacle_counter <= -OBSTACLE_HYSTERESIS_SAMPLES) {
+            // Confirmed gradual floor change - accept it
+            floor_height_estimate_m = current_alt_m;
+            last_floor_update_ms = now_ms;
+            obstacle_counter = 0;
+            return false;
+        } else {
+            // Still uncertain - filter out while deciding
+            return true;
+        }
+    } else {
+        // Small change - smooth track the floor
+        obstacle_counter = 0;  // Reset hysteresis
+
+        // Low-pass filter: new = old + alpha * (measurement - old)
+        const float alpha = dt / (dt + FLOOR_TRACKING_TAU);
+        floor_height_estimate_m += alpha * delta_m;
+        last_floor_update_ms = now_ms;
+        return false;
+    }
+}
+
 // update_surface_offset - manages the vertical offset of the position controller to follow the measured ground or ceiling
 //   level measured using the range finder.
 void Copter::SurfaceTracking::update_surface_offset()
@@ -16,6 +108,34 @@ void Copter::SurfaceTracking::update_surface_offset()
         // calculate surfaces height above the EKF origin
         // e.g. if vehicle is 10m above the EKF origin and rangefinder reports alt of 3m.  curr_surface_alt_above_origin_cm is 7m (or 700cm)
         RangeFinderState &rf_state = (surface == Surface::GROUND) ? copter.rangefinder_state : copter.rangefinder_up_state;
+
+        // Indoor Altitude Hold - Obstacle Detection
+        // Apply obstacle detection for ground tracking only
+        if (surface == Surface::GROUND) {
+            // Get current altitude in meters
+            const float current_alt_m = rf_state.alt_cm * 0.01f;
+
+            // Get tilt correction factor
+            const float tilt_correction = copter.rangefinder.get_tilt_correction(copter.ahrs.get_rotation_body_to_ned());
+
+            // Check if this is an obstacle
+            const bool is_obstacle = detect_obstacle_and_track_floor(
+                current_alt_m,
+                rf_state.floor_height_estimate_m,
+                rf_state.obstacle_counter,
+                rf_state.last_floor_update_ms,
+                now_ms,
+                0.05f,  // Assuming 20Hz update rate (50ms)
+                tilt_correction
+            );
+
+            // If detected as obstacle, use floor estimate instead of raw measurement
+            if (is_obstacle) {
+                // Recalculate terrain_offset_cm using floor estimate
+                const float floor_alt_cm = rf_state.floor_height_estimate_m * 100.0f;
+                rf_state.terrain_offset_cm = rf_state.inertial_alt_cm - floor_alt_cm;
+            }
+        }
 
         // update position controller target offset to the surface's alt above the EKF origin
         copter.pos_control->set_pos_offset_target_z_cm(rf_state.terrain_offset_cm);

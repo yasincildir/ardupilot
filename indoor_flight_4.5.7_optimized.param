@@ -1,0 +1,254 @@
+# ========================================
+# ArduPilot 4.5.7 - Indoor Flight Optimized Parameters
+# ========================================
+# Features:
+# - Indoor Altitude Hold (Obstacle Detection)
+# - POSHOLD Obstacle Avoidance
+# - Optimized for Holybro H-Flow + VL53L1X TOF Lidar
+# ========================================
+
+# ========================================
+# RANGEFINDER CONFIGURATION
+# ========================================
+
+# Downward Rangefinder (Primary - VL53L1X TOF on H-Flow)
+RNGFND1_TYPE,20              # Benewake TFMini (or set to appropriate type for VL53L1X)
+RNGFND1_ORIENT,25            # Downward (ROTATION_PITCH_270)
+RNGFND1_MIN_CM,5             # Minimum distance 5cm
+RNGFND1_MAX_CM,400           # Maximum distance 4m (VL53L1X range)
+RNGFND1_GNDCLEAR,10          # Ground clearance 10cm
+RNGFND1_SCALING,1.0          # No scaling
+RNGFND1_OFFSET,0             # No offset
+
+# NOTE: If using Benewake 30m lidar on H-Flow, change:
+# RNGFND1_TYPE,20              # Benewake TFMini/TFMini Plus
+# RNGFND1_MAX_CM,3000          # 30m range
+
+# ========================================
+# OPTICAL FLOW CONFIGURATION (H-Flow)
+# ========================================
+
+FLOW_TYPE,6                  # PX4Flow (H-Flow uses PX4Flow protocol)
+FLOW_FXSCALER,1.0            # Flow X scaling
+FLOW_FYSCALER,1.0            # Flow Y scaling
+FLOW_ORIENT_YAW,0            # Flow orientation (adjust if needed)
+
+# ========================================
+# EKF3 CONFIGURATION - INDOOR MODE
+# ========================================
+
+# EKF3 Source Selection (GPS Disabled for Indoor)
+EK3_SRC1_POSXY,0             # None (no GPS horizontal position)
+EK3_SRC1_VELXY,5             # Optical Flow
+EK3_SRC1_POSZ,1              # Barometer
+EK3_SRC1_VELZ,0              # None
+EK3_SRC1_YAW,1               # Compass (or 2 for GPS if outdoors)
+
+# EKF3 Height Fusion
+EK3_SRC_OPTIONS,1            # Fuse all height sources
+EK3_HGT_DELAY,80             # Height measurement delay (ms)
+EK3_RNG_USE_HGT,70           # Use rangefinder below 70m
+EK3_RNG_USE_SPD,2.0          # Use rangefinder below 2 m/s horizontal speed
+
+# EKF3 Optical Flow
+EK3_FLOW_USE,1               # Enable optical flow fusion (1=enable, 2=always)
+EK3_FLOW_DELAY,10            # Flow measurement delay (ms)
+EK3_FLOW_I_GATE,300          # Flow innovation gate size
+
+# EKF3 Barometer (Less reliable indoors, but needed)
+EK3_BARO_I_GATE,500          # Barometer innovation gate (larger for indoor variation)
+
+# ========================================
+# ALTITUDE HOLD & POSITION CONTROL
+# ========================================
+
+# Altitude Hold Parameters
+PSC_POSZ_P,1.0               # Altitude hold P gain
+PSC_VELZ_P,5.0               # Vertical velocity P gain
+PSC_ACCZ_P,0.5               # Vertical acceleration P gain
+PSC_ACCZ_I,1.0               # Vertical acceleration I gain
+PSC_ACCZ_D,0.0               # Vertical acceleration D gain
+
+# Horizontal Position Control
+PSC_POSXY_P,1.0              # Horizontal position P gain
+PSC_VELXY_P,2.0              # Horizontal velocity P gain (increased for indoor)
+PSC_VELXY_I,1.0              # Horizontal velocity I gain
+PSC_VELXY_D,0.5              # Horizontal velocity D gain
+PSC_VELXY_FILT,5.0           # Horizontal velocity filter (Hz)
+
+# ========================================
+# OBSTACLE AVOIDANCE
+# ========================================
+
+AVOID_ENABLE,7               # Enable all avoidance (Fence+Proximity+Beacon = 1+2+4=7)
+AVOID_MARGIN,2.0             # Stop 2.0m from obstacles (adjust to preference)
+AVOID_BEHAVE,1               # Stop behavior (0=Slide, 1=Stop)
+AVOID_BACKUP_SPD,0.3         # Backup speed 0.3 m/s
+AVOID_ACCEL_MAX,1.0          # Maximum avoidance acceleration
+AVOID_ALT_MIN,0.5            # Minimum altitude for avoidance (m)
+
+# ========================================
+# PROXIMITY SENSORS (If using side rangefinders)
+# ========================================
+
+# PRX_TYPE,4                 # RangeFinder proximity (uncomment if using)
+# PRX1_ORIENT,0              # Forward
+# PRX2_ORIENT,4              # Back
+# PRX3_ORIENT,2              # Right
+# PRX4_ORIENT,6              # Left
+
+# ========================================
+# LOITER MODE SETTINGS
+# ========================================
+
+LOIT_SPEED,1250              # Loiter speed 12.5 m/s (cm/s) - reduced for indoor
+LOIT_ACC_MAX,250             # Loiter acceleration 2.5 m/s² - reduced for smooth indoor flight
+LOIT_BRK_ACCEL,125           # Loiter brake acceleration 1.25 m/s²
+LOIT_BRK_DELAY,1.0           # Loiter brake delay 1 second
+LOIT_BRK_JERK,500            # Loiter brake jerk 5 m/s³
+
+# ========================================
+# POSHOLD MODE SETTINGS
+# ========================================
+
+PHLD_BRAKE_RATE,8            # PosHold brake rate 8 deg/s
+PHLD_BRAKE_ANGLE,3000        # PosHold max brake angle 30 degrees
+
+# ========================================
+# FENCE (INDOOR SAFETY)
+# ========================================
+
+FENCE_ENABLE,1               # Enable fence
+FENCE_TYPE,3                 # Max altitude + circle fence (1+2=3)
+FENCE_ALT_MAX,3.0            # Maximum altitude 3m (adjust for your ceiling height)
+FENCE_RADIUS,10.0            # Maximum radius 10m (adjust for your space)
+FENCE_ACTION,1               # RTL on fence breach (or 2 for Land)
+FENCE_MARGIN,0.5             # Fence margin 0.5m
+
+# ========================================
+# THROTTLE & ALTITUDE LIMITS
+# ========================================
+
+PILOT_SPEED_UP,250           # Max climb rate 2.5 m/s (cm/s)
+PILOT_SPEED_DN,150           # Max descent rate 1.5 m/s
+PILOT_ACCEL_Z,250            # Vertical acceleration 2.5 m/s²
+PILOT_THR_BHV,0              # Throttle behavior (0=feedback from mid stick)
+PILOT_TKOFF_ALT,0            # Auto takeoff altitude (0=disabled)
+
+# ========================================
+# WPNAV (WAYPOINT NAVIGATION)
+# ========================================
+
+WPNAV_SPEED,500              # Waypoint speed 5 m/s (cm/s) - reduced for indoor
+WPNAV_RADIUS,100             # Waypoint radius 1m (cm)
+WPNAV_ACCEL,100              # Waypoint acceleration 1 m/s² (cm/s²)
+WPNAV_ACCEL_Z,100            # Vertical waypoint acceleration 1 m/s²
+
+# ========================================
+# ARMING CHECKS (RELAXED FOR INDOOR)
+# ========================================
+
+ARMING_CHECK,16382           # All checks except GPS (16383-1=16382)
+# Breakdown: 16383 (all) - 1 (GPS) = 16382
+
+# ========================================
+# GPS (DISABLED FOR INDOOR)
+# ========================================
+
+GPS_TYPE,0                   # No GPS (set to 1 for Auto if using GPS outdoors)
+
+# ========================================
+# BATTERY FAILSAFE (IMPORTANT!)
+# ========================================
+
+BATT_LOW_VOLT,14.4           # Low battery voltage (adjust for your battery)
+BATT_CRT_VOLT,13.8           # Critical battery voltage
+BATT_FS_LOW_ACT,2            # Low battery action: Land
+BATT_FS_CRT_ACT,1            # Critical battery action: Land immediately
+
+# ========================================
+# LOGGING
+# ========================================
+
+LOG_BITMASK,176126           # Standard logging + rangefinder + optical flow
+LOG_FILE_DSRMROT,1           # Disarm log rotation
+LOG_DISARMED,0               # Don't log when disarmed (save space)
+
+# ========================================
+# FLIGHT MODE SETUP
+# ========================================
+
+FLTMODE1,5                   # Loiter
+FLTMODE2,16                  # PosHold
+FLTMODE3,2                   # AltHold
+FLTMODE4,0                   # Stabilize
+FLTMODE5,9                   # Land
+FLTMODE6,6                   # RTL (Return to Launch)
+
+# ========================================
+# RC INPUT
+# ========================================
+
+RC1_OPTION,0                 # Roll
+RC2_OPTION,0                 # Pitch
+RC3_OPTION,0                 # Throttle
+RC4_OPTION,0                 # Yaw
+# RC5_OPTION,0               # Flight mode (adjust based on your TX)
+# RC7_OPTION,19              # Example: Rangefinder enable/disable
+
+# ========================================
+# ATTITUDE CONTROL (SMOOTH FOR INDOOR)
+# ========================================
+
+ATC_RAT_RLL_P,0.135          # Roll rate P
+ATC_RAT_RLL_I,0.135          # Roll rate I
+ATC_RAT_RLL_D,0.0036         # Roll rate D
+ATC_RAT_PIT_P,0.135          # Pitch rate P
+ATC_RAT_PIT_I,0.135          # Pitch rate I
+ATC_RAT_PIT_D,0.0036         # Pitch rate D
+ATC_RAT_YAW_P,0.180          # Yaw rate P
+ATC_RAT_YAW_I,0.018          # Yaw rate I
+ATC_RAT_YAW_D,0.0            # Yaw rate D
+
+# Angle limits (reduced for safe indoor flight)
+ATC_SLEW_YAW,6000            # Yaw slew rate 60 deg/s (cd/s)
+ANGLE_MAX,3000               # Maximum lean angle 30 degrees (reduced from 45°)
+
+# ========================================
+# INDOOR ALTITUDE HOLD - CUSTOM SETTINGS
+# ========================================
+# These parameters are built into the code changes:
+# - OBSTACLE_JUMP_THRESHOLD = 0.8m
+# - OBSTACLE_HYSTERESIS_SAMPLES = 5
+# - MAX_FLOOR_CHANGE_RATE = 0.3 m/s
+# - FLOOR_TRACKING_TAU = 0.1s
+# - TILT_AGGRESSIVE_THRESHOLD = cos(30°) = 0.87
+
+# To disable obstacle detection, rebuild firmware with:
+# #define OBSTACLE_DETECTION_ENABLED 0
+# in surface_tracking.cpp
+
+# ========================================
+# NOTES
+# ========================================
+# 1. Adjust FENCE_ALT_MAX to your ceiling height minus safety margin
+# 2. Adjust FENCE_RADIUS to your room size
+# 3. Tune ATC_RAT_* parameters after initial flights for your specific drone
+# 4. AVOID_MARGIN controls obstacle distance (2m default, can reduce to 1m)
+# 5. Test in Stabilize mode first, then AltHold, then Loiter/PosHold
+# 6. Always have a safety pilot ready to switch to Stabilize!
+# 7. Battery failsafe is critical - adjust BATT_LOW_VOLT for your battery
+
+# ========================================
+# SAFETY CHECKLIST
+# ========================================
+# ☐ Rangefinder working (check RNGFND1 in Mission Planner)
+# ☐ Optical flow working (check FLOW in Mission Planner)
+# ☐ EKF healthy (EKF variance < 0.5)
+# ☐ Fence configured (test boundary)
+# ☐ Battery failsafe tested
+# ☐ Emergency stabilize mode accessible
+# ☐ Clear flight area (no people/pets)
+# ☐ Obstacle avoidance tested (approach wall slowly)
+
+# End of parameter file

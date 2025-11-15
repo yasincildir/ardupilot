@@ -406,8 +406,8 @@ void ModePosHold::run()
                 update_brake_angle_from_velocity(brake.roll, vel_right);
                 update_brake_angle_from_velocity(brake.pitch, -vel_fw);
 
-                // run loiter controller
-                loiter_nav->update(false);
+                // run loiter controller with obstacle avoidance enabled
+                loiter_nav->update(true);
 
                 // calculate final roll and pitch output by mixing loiter and brake controls
                 roll = mix_controls(brake_to_loiter_mix, brake.roll + wind_comp_roll, loiter_nav->get_roll());
@@ -437,8 +437,8 @@ void ModePosHold::run()
                 break;
             }
             case RPMode::LOITER:
-                // run loiter controller
-                loiter_nav->update(false);
+                // run loiter controller with obstacle avoidance enabled
+                loiter_nav->update(true);
 
                 // set roll angle based on loiter controller outputs
                 roll = loiter_nav->get_roll();

@@ -271,6 +271,10 @@ private:
         int8_t glitch_count;    // non-zero number indicates rangefinder is glitching
         uint32_t glitch_cleared_ms; // system time glitch cleared
         float terrain_offset_cm;    // filtered terrain offset (e.g. terrain's height above EKF origin)
+        // Obstacle detection state variables (Indoor Altitude Hold feature)
+        float floor_height_estimate_m;      // smoothly tracked floor height
+        int8_t obstacle_counter;            // counts consecutive samples for hysteresis
+        uint32_t last_floor_update_ms;      // time of last floor height update
     } rangefinder_state, rangefinder_up_state;
 
     // return rangefinder height interpolated using inertial altitude
