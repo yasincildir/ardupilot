@@ -19,7 +19,8 @@ bool ModeLoiter::init(bool ignore_checks)
     // process pilot's roll and pitch input
     loiter_nav->set_pilot_desired_acceleration_rad(target_roll_rad, target_pitch_rad);
 
-    loiter_nav->init_target();
+    // initialize target position, compensating for any position offsets from EKF resets
+    loiter_nav->init_target_m((pos_control->get_pos_estimate_NEU_m().xy() - pos_control->get_pos_offset_NEU_m().xy()));
 
     // initialise the vertical position controller
     if (!pos_control->is_active_U()) {
@@ -117,7 +118,7 @@ void ModeLoiter::run()
         attitude_control->reset_rate_controller_I_terms();
         attitude_control->reset_yaw_target_and_rate();
         pos_control->relax_U_controller(0.0f);   // forces throttle output to decay to zero
-        loiter_nav->init_target();
+        loiter_nav->init_target_m((pos_control->get_pos_estimate_NEU_m().xy() - pos_control->get_pos_offset_NEU_m().xy()));
         break;
 
     case AltHoldModeState::Landed_Ground_Idle:
@@ -126,7 +127,7 @@ void ModeLoiter::run()
 
     case AltHoldModeState::Landed_Pre_Takeoff:
         attitude_control->reset_rate_controller_I_terms_smoothly();
-        loiter_nav->init_target();
+        loiter_nav->init_target_m((pos_control->get_pos_estimate_NEU_m().xy() - pos_control->get_pos_offset_NEU_m().xy()));
         pos_control->relax_U_controller(0.0f);   // forces throttle output to decay to zero
         break;
 
@@ -160,7 +161,7 @@ void ModeLoiter::run()
         }
         if (precision_loiter_old_state && !_precision_loiter_active) {
             // prec loiter was active, not any more, let's init again as user takes control
-            loiter_nav->init_target();
+            loiter_nav->init_target_m((pos_control->get_pos_estimate_NEU_m().xy() - pos_control->get_pos_offset_NEU_m().xy()));
         }
         // run loiter controller if we are not doing prec loiter
         if (!_precision_loiter_active) {
