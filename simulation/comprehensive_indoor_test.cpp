@@ -12,7 +12,7 @@
 #include <algorithm>
 
 // Algorithm parameters (same as ArduPilot)
-const float INDOOR_OBS_THR = 0.8f;      // m (tunable parameter)
+const float INDOOR_OBS_THR = 0.45f;     // m (tunable parameter - MORE SENSITIVE)
 const float INDOOR_FLR_RATE = 0.3f;     // m/s (tunable parameter)
 const float HYSTERESIS_SAMPLES = 5;
 const float FLOOR_TRACKING_TAU = 0.1f;
