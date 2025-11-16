@@ -55,8 +55,8 @@ EK3_FLOW_USE,1               # Enable optical flow fusion (1=enable, 2=always)
 EK3_FLOW_DELAY,10            # Flow measurement delay (ms)
 EK3_FLOW_I_GATE,300          # Flow innovation gate size
 
-# EKF3 Barometer (Less reliable indoors, but needed)
-EK3_BARO_I_GATE,500          # Barometer innovation gate (larger for indoor variation)
+# EKF3 Height Source (Barometer + Rangefinder)
+EK3_HGT_I_GATE,500           # Height innovation gate (larger for indoor barometer variation)
 
 # ========================================
 # ALTITUDE HOLD & POSITION CONTROL
