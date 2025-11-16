@@ -14,9 +14,9 @@
 # Downward Rangefinder (Primary - VL53L1X TOF on H-Flow)
 RNGFND1_TYPE,20              # Benewake TFMini (or set to appropriate type for VL53L1X)
 RNGFND1_ORIENT,25            # Downward (ROTATION_PITCH_270)
-RNGFND1_MIN_CM,5             # Minimum distance 5cm
+RNGFND1_MIN_CM,1             # Minimum distance 1cm (VL53L1X can measure from 0cm)
 RNGFND1_MAX_CM,400           # Maximum distance 4m (VL53L1X range)
-RNGFND1_GNDCLEAR,10          # Ground clearance 10cm
+RNGFND1_GNDCLEAR,5           # Ground clearance 5cm (reduced from 10cm for low altitude stability)
 RNGFND1_SCALING,1.0          # No scaling
 RNGFND1_OFFSET,0             # No offset
 

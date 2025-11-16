@@ -360,10 +360,13 @@ AVOID_MARGIN = 3.0       # 2.0 → 3.0m
 
 | Problem | Olası Sebep | Çözüm |
 |---------|------------|-------|
+| **Optical flow fusion stopped (yere yakın)** | Lidar minimum range yüksek | `RNGFND1_MIN_CM = 1` yap (5→1cm) ✅ |
+| **Rangefinder unhealthy (landing)** | Ground clearance yüksek | `RNGFND1_GNDCLEAR = 5` yap (10→5cm) ✅ |
 | **EKF variance high** | Optical flow kötü | Zemin doku ekle, aydınlatmayı artır |
-| **Altitude jump hala var** | Threshold çok yüksek | OBSTACLE_JUMP_THRESHOLD'u düşür |
-| **Gerçek zemin değişimi ignore ediliyor** | Rate limit çok düşük | MAX_FLOOR_CHANGE_RATE'i artır |
-| **POSHOLD'da avoidance yok** | Parametre hatası | AVOID_ENABLE=7 kontrol et |
+| **Barometer çok gürültülü (koridor)** | HVAC/kapı/sıcaklık etkileri | `EK3_HGT_I_GATE = 700` yap ✅ |
+| **Altitude jump hala var** | Threshold çok yüksek | `INDOOR_OBS_THR = 0.45` (varsayılan) |
+| **Gerçek zemin değişimi ignore ediliyor** | Rate limit çok düşük | `INDOOR_FLR_RATE = 0.5` artır |
+| **POSHOLD'da avoidance yok** | Parametre hatası | `AVOID_ENABLE = 7` kontrol et |
 | **Build hatası** | Submodule eksik | `git submodule update --init --recursive` |
 | **Firmware yüklenmiyor** | Board yanlış | `./waf list_boards` ile kontrol et |
 
