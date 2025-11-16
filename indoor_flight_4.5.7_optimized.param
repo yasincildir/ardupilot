@@ -40,14 +40,21 @@ FLOW_ORIENT_YAW,0            # Flow orientation (adjust if needed)
 # EKF3 Source Selection (GPS Disabled for Indoor)
 EK3_SRC1_POSXY,0             # None (no GPS horizontal position)
 EK3_SRC1_VELXY,5             # Optical Flow
-EK3_SRC1_POSZ,1              # Barometer
+EK3_SRC1_POSZ,1              # Barometer (primary source definition)
 EK3_SRC1_VELZ,0              # None
 EK3_SRC1_YAW,1               # Compass (or 2 for GPS if outdoors)
 
+# Secondary source (fallback configuration)
+EK3_SRC2_POSXY,0             # None
+EK3_SRC2_VELXY,0             # None
+EK3_SRC2_POSZ,2              # Range Beacon (reserved for future use)
+EK3_SRC2_VELZ,0              # None
+EK3_SRC2_YAW,1               # Compass
+
 # EKF3 Height Fusion
-EK3_SRC_OPTIONS,1            # Fuse all height sources
+EK3_SRC_OPTIONS,1            # Fuse all height sources (sensor fusion)
 EK3_HGT_DELAY,80             # Height measurement delay (ms)
-EK3_RNG_USE_HGT,70           # Use rangefinder below 70m
+EK3_RNG_USE_HGT,70           # Use rangefinder below 70m (ALWAYS indoors - lidar prioritized!)
 EK3_RNG_USE_SPD,2.0          # Use rangefinder below 2 m/s horizontal speed
 
 # EKF3 Optical Flow
@@ -56,7 +63,10 @@ EK3_FLOW_DELAY,10            # Flow measurement delay (ms)
 EK3_FLOW_I_GATE,300          # Flow innovation gate size
 
 # EKF3 Height Source (Barometer + Rangefinder)
-EK3_HGT_I_GATE,500           # Height innovation gate (larger for indoor barometer variation)
+# NOTE: This gate affects BOTH barometer and rangefinder!
+# Indoor: Lidar is accurate (innovation ~0.08m), Baro is noisy (innovation ~1.5m)
+# Gate 700 is safe: Accepts baro variations while lidar remains accurate
+EK3_HGT_I_GATE,700           # Height innovation gate (corridor-safe for barometer noise)
 
 # ========================================
 # ALTITUDE HOLD & POSITION CONTROL
@@ -220,10 +230,11 @@ ANGLE_MAX,3000               # Maximum lean angle 30 degrees (reduced from 45°)
 
 # Obstacle Jump Threshold (meters)
 # Height change above this value = potential obstacle
-# Default: 0.8m (detects most furniture: beds, tables, sofas)
-# Increase: Less sensitive (0.8 → 1.0m = only large obstacles)
-# Decrease: More sensitive (0.8 → 0.6m = detects smaller bumps)
-INDOOR_OBS_THR,0.8
+# Default: 0.45m (sensitive for cluttered home environments)
+# Increase: Less sensitive (0.45 → 0.8m = only larger obstacles)
+# Decrease: More sensitive (0.45 → 0.3m = detects very small bumps)
+# Recommended: 0.45m for homes with many small objects (stools, boxes, etc.)
+INDOOR_OBS_THR,0.45
 
 # Maximum Floor Change Rate (m/s)
 # Maximum rate of valid floor height change

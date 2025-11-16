@@ -250,10 +250,11 @@ AVOID_BEHAVE = 1         # Stop behavior (0=Slide, 1=Stop)
 **5. Indoor Altitude Hold (INDOOR_*) - YENİ! ⚙️:**
 ```
 # Ana Parametreler (Standard):
-INDOOR_OBS_THR = 0.8     # Obstacle jump threshold (meters)
-                         # 0.8m'den büyük değişim = engel
-                         # Artır: Daha az hassas (1.0 = sadece büyük engeller)
-                         # Azalt: Daha hassas (0.6 = küçük engelleri de yakalar)
+INDOOR_OBS_THR = 0.45    # Obstacle jump threshold (meters)
+                         # ✅ 0.45m = Ev ortamı için optimize edilmiş
+                         # Tabure, küçük sehpa, kutu gibi küçük engelleri yakalar
+                         # Artır: Daha az hassas (0.8 = sadece büyük mobilyalar)
+                         # Azalt: Çok hassas (0.3 = her küçük objeyi yakalar)
 
 INDOOR_FLR_RATE = 0.3    # Maximum floor change rate (m/s)
                          # Hızlı değişim = engel, yavaş = gerçek zemin
@@ -273,6 +274,22 @@ INDOOR_TRACK_TAU = 0.1   # Floor tracking time constant (seconds)
 POSHOLD_AVOID_EN = 1     # POSHOLD modda engel önleme (YENİ! 🆕)
                          # 1: Açık (İç mekan - önerilen)
                          # 0: Kapalı (Dış mekan - pilot otoritesi)
+```
+
+**6. EKF3 Barometer Innovation Gate - YENİ! 📊:**
+```
+EK3_HGT_I_GATE = 700     # Height innovation gate (corridor-safe)
+                         # ⚠️ Bu parametre HEM barometreyi HEM lidarı etkiler!
+                         # İç mekanda: Baro gürültülü (±1.5m), Lidar doğru (±0.08m)
+                         #
+                         # Değer Seçimi:
+                         # 300 (Default): Modern sızdırmaz bina
+                         # 500: Standart ev ortamı (HVAC, kapı/pencere)
+                         # 700: Koridor/zorlu ortam (güçlü klima, sık kapı) ✅
+                         # 1000: Aşırı gürültülü (sadece endüstriyel)
+                         #
+                         # NOT: EK3_RNG_USE_HGT=70 sayesinde lidar zaten öncelikli!
+                         # Bu parametre barometrenin çevresel etkileri kabul etmesini sağlar
 ```
 
 **💡 Runtime Tuning İpucu:**
@@ -295,7 +312,7 @@ FENCE_RADIUS = 10.0      # Oda boyutunuza göre!
 **Altitude Hold Çok Hassas (Gereksiz Filtreleme):**
 ```bash
 # Mission Planner → Config → Full Parameter List
-INDOOR_OBS_THR = 1.0     # 0.8 → 1.0m (daha az hassas)
+INDOOR_OBS_THR = 0.8     # 0.45 → 0.8m (sadece büyük mobilyalar)
 # Write Params → Reboot → Test
 ```
 
@@ -308,8 +325,15 @@ INDOOR_FLR_RATE = 0.5    # 0.3 → 0.5 m/s (daha hızlı zemin değişimi kabul 
 
 **Çok Küçük Engelleri de Yakalamak İstiyorsanız:**
 ```bash
-INDOOR_OBS_THR = 0.6     # 0.8 → 0.6m (sandalye/sehpa gibi küçük mobilyalar)
+INDOOR_OBS_THR = 0.3     # 0.45 → 0.3m (her küçük objeyi yakalar)
 INDOOR_FLR_RATE = 0.2    # 0.3 → 0.2 m/s (daha katı)
+```
+
+**Koridorlarda Barometer Gürültülü (EKF Problemi):**
+```bash
+# HVAC, kapı, sıcaklık değişimi nedeniyle baro zıplıyor
+EK3_HGT_I_GATE = 700     # 500 → 700 (daha fazla baro gürültüsü kabul et)
+# Lidar doğruluğu etkilenmez (EK3_RNG_USE_HGT=70 ile öncelikli)
 ```
 
 **Obstacle Avoidance Çok Erken Duruyor:**
