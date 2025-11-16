@@ -247,6 +247,17 @@ INDOOR_HYST_SAMP,5
 # Decrease: More responsive but less stable (0.1 → 0.05s = fast tracking)
 INDOOR_TRACK_TAU,0.1
 
+# ========================================
+# POSHOLD MODE - OBSTACLE AVOIDANCE
+# ========================================
+
+# Enable Obstacle Avoidance in POSHOLD Mode
+# Controls whether POSHOLD mode uses obstacle avoidance system
+# Default: 1 (Enabled - recommended for indoor flights)
+# 0: Disabled - Pilot authority prioritized (outdoor use)
+# 1: Enabled - Safety prioritized (indoor use)
+POSHOLD_AVOID_EN,1
+
 # Fixed parameters (built into code):
 # - TILT_AGGRESSIVE_THRESHOLD = cos(30°) = 0.87 (tilt detection)
 

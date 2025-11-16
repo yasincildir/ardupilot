@@ -708,6 +708,9 @@ public:
     AP_Float indoor_floor_rate;     // maximum floor change rate (m/s)
     AP_Int8  indoor_hyst_samp;      // hysteresis samples for obstacle confirmation
     AP_Float indoor_track_tau;      // floor tracking time constant (seconds)
+
+    // POSHOLD Mode - Obstacle Avoidance
+    AP_Int8  poshold_avoid_en;      // enable obstacle avoidance in POSHOLD mode
 };
 
 extern const AP_Param::Info        var_info[];

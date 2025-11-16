@@ -1281,6 +1281,13 @@ const AP_Param::GroupInfo ParametersG2::var_info2[] = {
     // @User: Advanced
     AP_GROUPINFO("INDOOR_TRACK_TAU", 12, ParametersG2, indoor_track_tau, 0.1),
 
+    // @Param: POSHOLD_AVOID_EN
+    // @DisplayName: POSHOLD obstacle avoidance enable
+    // @Description: Enable obstacle avoidance in POSHOLD mode. When enabled, the drone will stop or slow down when approaching obstacles while in POSHOLD mode, even when pilot releases sticks. Recommended for indoor flights. Set to 0 to disable for outdoor use where pilot authority is preferred.
+    // @Values: 0:Disabled,1:Enabled
+    // @User: Standard
+    AP_GROUPINFO("POSHOLD_AVOID_EN", 13, ParametersG2, poshold_avoid_en, 1),
+
     // ID 62 is reserved for the AP_SUBGROUPEXTENSION
 
     AP_GROUPEND

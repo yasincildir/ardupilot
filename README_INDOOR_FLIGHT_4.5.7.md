@@ -268,12 +268,17 @@ INDOOR_HYST_SAMP = 5     # Hysteresis samples (onaylama için örnek sayısı)
 INDOOR_TRACK_TAU = 0.1   # Floor tracking time constant (seconds)
                          # Artır: Daha yumuşak (0.2 = çok stabil)
                          # Azalt: Daha hızlı takip (0.05 = çok duyarlı)
+
+# POSHOLD Mode Parametresi:
+POSHOLD_AVOID_EN = 1     # POSHOLD modda engel önleme (YENİ! 🆕)
+                         # 1: Açık (İç mekan - önerilen)
+                         # 0: Kapalı (Dış mekan - pilot otoritesi)
 ```
 
 **💡 Runtime Tuning İpucu:**
 Bu parametreler **firmware rebuild gerektirmez**! Mission Planner'dan anında değiştirebilirsiniz:
 - Config → Full Parameter List
-- `INDOOR_` ara (tüm parametreleri görürsünüz)
+- `INDOOR_` veya `POSHOLD_` ara
 - Değeri değiştir → Write Params
 - Test et!
 
