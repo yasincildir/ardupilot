@@ -11,18 +11,18 @@
 # RANGEFINDER CONFIGURATION
 # ========================================
 
-# Downward Rangefinder (Primary - VL53L1X TOF on H-Flow)
-RNGFND1_TYPE,20              # Benewake TFMini (or set to appropriate type for VL53L1X)
+# Downward Rangefinder (Primary - Benewake 30m Lidar)
+RNGFND1_TYPE,20              # Benewake TFMini/TFMini Plus (30m range)
 RNGFND1_ORIENT,25            # Downward (ROTATION_PITCH_270)
-RNGFND1_MIN_CM,1             # Minimum distance 1cm (VL53L1X can measure from 0cm)
-RNGFND1_MAX_CM,400           # Maximum distance 4m (VL53L1X range)
-RNGFND1_GNDCLEAR,5           # Ground clearance 5cm (reduced from 10cm for low altitude stability)
+RNGFND1_MIN_CM,30            # Minimum distance 30cm (TFMini Plus spec)
+RNGFND1_MAX_CM,3000          # Maximum distance 30m ✓ 4th floor capable!
+RNGFND1_GNDCLEAR,5           # Ground clearance 5cm
 RNGFND1_SCALING,1.0          # No scaling
 RNGFND1_OFFSET,0             # No offset
 
-# NOTE: If using Benewake 30m lidar on H-Flow, change:
-# RNGFND1_TYPE,20              # Benewake TFMini/TFMini Plus
-# RNGFND1_MAX_CM,3000          # 30m range
+# NOTE: For VL53L1X (4m range - indoor only), use:
+# RNGFND1_MIN_CM,1
+# RNGFND1_MAX_CM,400
 
 # ========================================
 # OPTICAL FLOW CONFIGURATION (H-Flow)

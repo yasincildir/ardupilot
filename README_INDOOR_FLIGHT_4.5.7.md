@@ -393,6 +393,70 @@ AVOID_MARGIN = 3.0       # 2.0 → 3.0m
 
 ---
 
+## 🏢 Advanced: GPS ↔ Indoor Geçiş (4. Kata Giriş)
+
+**⚠️ GEREKSİNİMLER:**
+- ✅ 30m menzilli lidar (TFMini Plus/Benewake) - ŞART!
+- ✅ Optical flow kalitesi > %80
+- ✅ İleri seviye pilot (Manuel STABILIZE yeteneği)
+- ✅ Güvenli test ortamı (emergency landing alanı)
+
+### Güvenli Giriş Prosedürü (Özetlenmiş):
+
+**Faz 1: Outdoor Yaklaşma (GPS Mode)**
+```
+1. GPS LOITER ile 4. kat hizasına çık (12-15m)
+2. Pencereden 10m uzakta hover
+3. Kontroller:
+   ├─ Rüzgar < 5 m/s ✓
+   ├─ Lidar okuma: ~12-15m ✓
+   └─ Battery > %40 ✓
+```
+
+**Faz 2: Geçiş Hazırlığı**
+```
+4. Pencereden 5m mesafede, hızı düşür (1 m/s)
+5. Optical flow quality kontrol: > %80 ✓
+6. GPS satellite: 6+ (düşecek, normal)
+```
+
+**Faz 3: GPS → Indoor Geçiş (KRİTİK!)**
+```
+7. 2m mesafede LOITER → POSHOLD moduna geç
+   (POSHOLD GPS kaybında otomatik flow'a geçer)
+8. 2 saniye hover, position drift < 0.5m kontrol
+```
+
+**Faz 4: İçeri Giriş**
+```
+9. 0.3 m/s yavaşça pencereden gir
+10. İçerde 1m ileri, 5 saniye hover (stabilite)
+11. Artık tam indoor mode - Normal uçuş ✓
+```
+
+**Faz 5: Çıkış (Ters Prosedür)**
+```
+12. POSHOLD'da pencereye yaklaş (0.3 m/s)
+13. Dışarı çık, GPS lock bekle (10+ sat)
+14. POSHOLD → LOITER (GPS aktif olunca)
+15. Normal outdoor flight ✓
+```
+
+**⚠️ ABORT Koşulları:**
+- ❌ Rüzgar > 5 m/s
+- ❌ Flow quality < %50
+- ❌ Position drift > 1m
+- ❌ Battery < %40
+- ❌ EKF variance warning
+
+**💡 İlk Defa Yapıyorsan:**
+1. Önce 1. katta test et (güvenli)
+2. Sonra 2. kat (biraz risk)
+3. 3. kat (daha riskli)
+4. En son 4. kat (test edilmişse)
+
+---
+
 ## 🔧 Troubleshooting
 
 | Problem | Olası Sebep | Çözüm |
