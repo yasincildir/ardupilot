@@ -233,9 +233,21 @@ INDOOR_OBS_THR,0.8
 # Decrease: Treats more changes as obstacles (0.3 → 0.2 m/s)
 INDOOR_FLR_RATE,0.3
 
+# Hysteresis Samples (Advanced)
+# Number of consecutive samples required to confirm obstacle
+# Default: 5 samples (reduces false positives)
+# Increase: More confirmation needed (5 → 7 = more conservative)
+# Decrease: Faster detection (5 → 3 = quicker response, may have false positives)
+INDOOR_HYST_SAMP,5
+
+# Floor Tracking Time Constant (Advanced)
+# Smoothing filter time constant in seconds
+# Default: 0.1s (balanced smoothness/responsiveness)
+# Increase: Smoother but slower (0.1 → 0.2s = very smooth)
+# Decrease: More responsive but less stable (0.1 → 0.05s = fast tracking)
+INDOOR_TRACK_TAU,0.1
+
 # Fixed parameters (built into code):
-# - OBSTACLE_HYSTERESIS_SAMPLES = 5 (confirmation samples)
-# - FLOOR_TRACKING_TAU = 0.1s (smoothing time constant)
 # - TILT_AGGRESSIVE_THRESHOLD = cos(30°) = 0.87 (tilt detection)
 
 # ========================================

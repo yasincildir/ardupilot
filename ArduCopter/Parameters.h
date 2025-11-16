@@ -706,6 +706,8 @@ public:
     // Indoor Altitude Hold - Obstacle Detection Parameters
     AP_Float indoor_obs_thr;        // obstacle jump threshold (meters)
     AP_Float indoor_floor_rate;     // maximum floor change rate (m/s)
+    AP_Int8  indoor_hyst_samp;      // hysteresis samples for obstacle confirmation
+    AP_Float indoor_track_tau;      // floor tracking time constant (seconds)
 };
 
 extern const AP_Param::Info        var_info[];

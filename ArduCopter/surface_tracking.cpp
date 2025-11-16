@@ -6,11 +6,10 @@
 
 // Obstacle detection thresholds and constants
 #define OBSTACLE_DETECTION_ENABLED 1
-#define OBSTACLE_HYSTERESIS_SAMPLES 5           // Require 5 consecutive samples to confirm floor change
-#define FLOOR_TRACKING_TAU 0.1f                 // Time constant for floor height smoothing (100ms)
 #define TILT_AGGRESSIVE_THRESHOLD 0.87f         // cos(30°) - use aggressive detection when tilted >30°
 
-// Note: INDOOR_OBS_THR and INDOOR_FLR_RATE are now runtime parameters (g2.indoor_obs_thr, g2.indoor_floor_rate)
+// Note: All tunable parameters are now runtime configurable:
+//   INDOOR_OBS_THR, INDOOR_FLR_RATE, INDOOR_HYST_SAMP, INDOOR_TRACK_TAU
 
 // Helper function: Detects obstacles vs floor changes using rate-of-change and hysteresis
 // Returns true if current measurement is likely an obstacle (should be filtered out)
@@ -23,7 +22,9 @@ static bool detect_obstacle_and_track_floor(
     float dt,
     float tilt_correction,
     float obstacle_jump_threshold_m,
-    float max_floor_change_rate_ms)
+    float max_floor_change_rate_ms,
+    int8_t hysteresis_samples,
+    float tracking_tau)
 {
     if (!OBSTACLE_DETECTION_ENABLED) {
         return false;
@@ -62,17 +63,17 @@ static bool detect_obstacle_and_track_floor(
 
         if (floor_change_rate_ms > max_floor_rate) {
             // Too fast = likely obstacle
-            obstacle_counter = MIN(obstacle_counter + 1, OBSTACLE_HYSTERESIS_SAMPLES + 1);
+            obstacle_counter = MIN(obstacle_counter + 1, hysteresis_samples + 1);
         } else {
             // Gradual change = likely real floor change
-            obstacle_counter = MAX(obstacle_counter - 1, -(OBSTACLE_HYSTERESIS_SAMPLES + 1));
+            obstacle_counter = MAX(obstacle_counter - 1, -(hysteresis_samples + 1));
         }
 
         // Hysteresis: require consecutive samples to confirm
-        if (obstacle_counter >= OBSTACLE_HYSTERESIS_SAMPLES) {
+        if (obstacle_counter >= hysteresis_samples) {
             // Confirmed obstacle - keep returning true
             return true;
-        } else if (obstacle_counter <= -OBSTACLE_HYSTERESIS_SAMPLES) {
+        } else if (obstacle_counter <= -hysteresis_samples) {
             // Confirmed gradual floor change - accept it
             floor_height_estimate_m = current_alt_m;
             last_floor_update_ms = now_ms;
@@ -87,7 +88,7 @@ static bool detect_obstacle_and_track_floor(
         obstacle_counter = 0;  // Reset hysteresis
 
         // Low-pass filter: new = old + alpha * (measurement - old)
-        const float alpha = dt / (dt + FLOOR_TRACKING_TAU);
+        const float alpha = dt / (dt + tracking_tau);
         floor_height_estimate_m += alpha * delta_m;
         last_floor_update_ms = now_ms;
         return false;
@@ -134,7 +135,9 @@ void Copter::SurfaceTracking::update_surface_offset()
                 0.05f,  // Assuming 20Hz update rate (50ms)
                 tilt_correction,
                 copter.g2.indoor_obs_thr,       // Runtime parameter: obstacle jump threshold
-                copter.g2.indoor_floor_rate     // Runtime parameter: max floor change rate
+                copter.g2.indoor_floor_rate,    // Runtime parameter: max floor change rate
+                copter.g2.indoor_hyst_samp,     // Runtime parameter: hysteresis samples
+                copter.g2.indoor_track_tau      // Runtime parameter: tracking time constant
             );
 
             // If detected as obstacle, use floor estimate instead of raw measurement

@@ -1265,6 +1265,22 @@ const AP_Param::GroupInfo ParametersG2::var_info2[] = {
     // @User: Standard
     AP_GROUPINFO("INDOOR_FLR_RATE", 10, ParametersG2, indoor_floor_rate, 0.3),
 
+    // @Param: INDOOR_HYST_SAMP
+    // @DisplayName: Indoor obstacle hysteresis samples
+    // @Description: Number of consecutive rangefinder samples required to confirm an obstacle detection. Higher values reduce false positives but increase detection latency. Lower values make detection faster but may trigger on sensor noise.
+    // @Range: 3 10
+    // @Units: samples
+    // @User: Advanced
+    AP_GROUPINFO("INDOOR_HYST_SAMP", 11, ParametersG2, indoor_hyst_samp, 5),
+
+    // @Param: INDOOR_TRACK_TAU
+    // @DisplayName: Indoor floor tracking time constant
+    // @Description: Time constant in seconds for floor height smoothing filter. Lower values make floor tracking more responsive but less stable. Higher values provide smoother tracking but slower response to real floor changes.
+    // @Range: 0.05 0.5
+    // @Units: s
+    // @User: Advanced
+    AP_GROUPINFO("INDOOR_TRACK_TAU", 12, ParametersG2, indoor_track_tau, 0.1),
+
     // ID 62 is reserved for the AP_SUBGROUPEXTENSION
 
     AP_GROUPEND

@@ -249,6 +249,7 @@ AVOID_BEHAVE = 1         # Stop behavior (0=Slide, 1=Stop)
 
 **5. Indoor Altitude Hold (INDOOR_*) - YENİ! ⚙️:**
 ```
+# Ana Parametreler (Standard):
 INDOOR_OBS_THR = 0.8     # Obstacle jump threshold (meters)
                          # 0.8m'den büyük değişim = engel
                          # Artır: Daha az hassas (1.0 = sadece büyük engeller)
@@ -258,12 +259,21 @@ INDOOR_FLR_RATE = 0.3    # Maximum floor change rate (m/s)
                          # Hızlı değişim = engel, yavaş = gerçek zemin
                          # Artır: Daha hızlı zemin değişimi kabul edilir (0.5)
                          # Azalt: Daha fazla engel algılanır (0.2)
+
+# İleri Seviye Parametreler (Advanced):
+INDOOR_HYST_SAMP = 5     # Hysteresis samples (onaylama için örnek sayısı)
+                         # Artır: Daha çok onaylama (7 = çok muhafazakar)
+                         # Azalt: Daha hızlı algılama (3 = hızlı ama yanılabilir)
+
+INDOOR_TRACK_TAU = 0.1   # Floor tracking time constant (seconds)
+                         # Artır: Daha yumuşak (0.2 = çok stabil)
+                         # Azalt: Daha hızlı takip (0.05 = çok duyarlı)
 ```
 
 **💡 Runtime Tuning İpucu:**
 Bu parametreler **firmware rebuild gerektirmez**! Mission Planner'dan anında değiştirebilirsiniz:
 - Config → Full Parameter List
-- `INDOOR_OBS_THR` veya `INDOOR_FLR_RATE` ara
+- `INDOOR_` ara (tüm parametreleri görürsünüz)
 - Değeri değiştir → Write Params
 - Test et!
 
