@@ -126,9 +126,12 @@ indoor_flight_4.5.7_optimized.param
 | `ArduCopter/Copter.h` | Obstacle detection state variables eklendi | +3 lines |
 | `ArduCopter/surface_tracking.cpp` | Obstacle detection algoritması | +93 lines |
 | `ArduCopter/mode_poshold.cpp` | Obstacle avoidance aktif edildi | +4/-4 lines |
-| `indoor_flight_4.5.7_optimized.param` | Komple parametre dosyası | +282 lines |
+| `ArduCopter/Parameters.h` | Runtime obstacle/poshold parametreleri | +5 lines |
+| `ArduCopter/Parameters.cpp` | Parameter definitions | +25 lines |
+| `libraries/AP_NavEKF3/AP_NavEKF3_VehicleStatus.cpp` | **Optical flow false takeoff fix** 🆕 | +7/-1 lines |
+| `indoor_flight_4.5.7_optimized.param` | Komple parametre dosyası | +287 lines |
 
-**Toplam:** ~382 satır yeni/değiştirilmiş kod
+**Toplam:** ~424 satır yeni/değiştirilmiş kod
 
 ---
 
@@ -175,6 +178,40 @@ loiter_nav->update(true);   // Avoidance ON
 **2 lokasyon:**
 - Line 410: BRAKE_TO_LOITER state
 - Line 441: LOITER state
+
+### Optical Flow False Takeoff Fix (EKF3 Patch):
+
+**Problem:**
+Drone yerde ARM olunca, optical flow sensor noise algılıyor → EKF "drift var" sanıp drone'u eğiyor → Gyro hareketi algılıyor → `takeOffDetected = true` → Flow sıfırlanmıyor → Drone eğik kalıyor (±15°)
+
+**Kök Neden:**
+```cpp
+// ArduPilot 4.5.7 vanilla (AP_NavEKF3_VehicleStatus.cpp:458)
+takeOffDetected = (takeOffDetected ||
+                  (angRateVec.length() > 0.1f) ||      // ❌ Çok hassas!
+                  (rangeDataNew.rng > (rngAtStartOfFlight + 0.1f)));  // ❌ 10cm yeterli
+```
+
+Optical flow noise → drone eğiliyor → gyro > 0.1 rad/s → false takeoff!
+
+**Çözüm (Bu Branch):**
+```cpp
+// INDOOR PATCH: More conservative takeoff detection
+const bool significantRotation = (angRateVec.length() > 0.3f);  // 0.1 → 0.3
+const bool significantHeight = (rangeDataNew.rng > (rngAtStartOfFlight + 0.3f));  // 0.1m → 0.3m
+takeOffDetected = (takeOffDetected || (significantRotation && significantHeight));  // OR → AND
+```
+
+**Ne Değişti:**
+1. **Gyro threshold:** 0.1 → 0.3 rad/s (gerçek hareket gerekiyor)
+2. **Height threshold:** 10cm → 30cm (gerçek yükselme gerekiyor)
+3. **Logic:** OR → AND (hem rotation hem height gerekli)
+
+**Sonuç:**
+- ✅ Drone yerde ARM olunca artık eğilmiyor
+- ✅ Optical flow noise false takeoff yaratmıyor
+- ✅ Gerçek takeoff'ta (>30cm + hareket) normal çalışıyor
+- ⚠️ **Best practice:** ARM sonrası 2-3 saniye bekle, sonra throttle up
 
 ---
 
@@ -360,6 +397,7 @@ AVOID_MARGIN = 3.0       # 2.0 → 3.0m
 
 | Problem | Olası Sebep | Çözüm |
 |---------|------------|-------|
+| **Drone yerde eğiliyor (ARM sonrası ±15°)** | Optical flow noise false takeoff | **PATCH UYGULANMIŞ** ✅ ARM sonrası 2-3sn bekle, sonra throttle |
 | **Optical flow fusion stopped (yere yakın)** | Lidar minimum range yüksek | `RNGFND1_MIN_CM = 1` yap (5→1cm) ✅ |
 | **Rangefinder unhealthy (landing)** | Ground clearance yüksek | `RNGFND1_GNDCLEAR = 5` yap (10→5cm) ✅ |
 | **EKF variance high** | Optical flow kötü | Zemin doku ekle, aydınlatmayı artır |
