@@ -84,6 +84,44 @@ void NavEKF3_core::readRangeFinder(void)
                 // get position in body frame for the current sensor
                 rangeDataNew.sensor_idx = sensorIndex;
 
+                // MINIMAL ALTITUDE TRANSITION: Detect GPS↔Indoor, multi-floor, table crossing
+                // Hard-coded thresholds: 5m change, 0.5 m/s² IMU, 3s blend
+                if (altTransitionPrevRange > 0.0f && !altTransitionActive) {
+                    ftype delta = rangeDataNew.rng - altTransitionPrevRange;
+                    ftype delta_abs = fabsf(delta);
+
+                    // Threshold: 5m change detected
+                    if (delta_abs > 5.0f) {
+                        // IMU validation: Check if drone is actually moving or reference changed
+                        const auto &ins = dal.ins();
+                        bool is_reference_change = true;  // Default: assume reference change
+
+                        if (accel_index_active < ins.get_accel_count()) {
+                            Vector3f accel = ins.get_accel(accel_index_active);
+                            ftype vert_accel_abs = fabsf(accel.z + GRAVITY_MSS);
+
+                            // If vertical accel > 0.5 m/s², drone is actually moving
+                            if (vert_accel_abs > 0.5f) {
+                                is_reference_change = false;  // Real movement, not reference change
+                            }
+                        }
+
+                        if (is_reference_change) {
+                            // Start transition: Disable baro gate, blend altitude
+                            altTransitionActive = true;
+                            altTransitionStartTime_ms = imuSampleTime_ms;
+                            altTransitionStartAlt = stateStruct.position.z;
+                            altTransitionTargetAlt = stateStruct.position.z + delta;
+                            altTransitionDuration_ms = 3000;  // 3 seconds blend
+
+                            // Save and expand baro gate (for baro, not lidar!)
+                            altTransitionSavedGate = frontend->_hgtInnovGate.get();
+                            frontend->_hgtInnovGate.set(10000);  // Very large gate for baro
+                        }
+                    }
+                }
+                altTransitionPrevRange = rangeDataNew.rng;
+
                 // write data to buffer with time stamp to be fused when the fusion time horizon catches up with it
                 storedRange.push(rangeDataNew);
 

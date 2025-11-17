@@ -222,6 +222,15 @@ void NavEKF3_core::InitialiseVariables()
     lastPosResetD_ms = 0;
     lastRngMeasTime_ms = 0;
 
+    // Minimal altitude transition initialization
+    altTransitionActive = false;
+    altTransitionStartTime_ms = 0;
+    altTransitionStartAlt = 0.0f;
+    altTransitionTargetAlt = 0.0f;
+    altTransitionDuration_ms = 0;
+    altTransitionSavedGate = 0;
+    altTransitionPrevRange = 0.0f;
+
     // initialise other variables
     memset(&dvelBiasAxisInhibit, 0, sizeof(dvelBiasAxisInhibit));
 	dvelBiasAxisVarPrev.zero();
@@ -722,6 +731,24 @@ void NavEKF3_core::UpdateFilter(bool predict)
 
     // Wind output forward from the fusion to output time horizon
     calcOutputStates();
+
+    // MINIMAL ALTITUDE TRANSITION: Smooth blend during GPS↔Indoor, multi-floor, table crossing
+    if (altTransitionActive) {
+        uint32_t elapsed_ms = imuSampleTime_ms - altTransitionStartTime_ms;
+
+        if (elapsed_ms >= altTransitionDuration_ms) {
+            // Transition complete - restore baro gate
+            altTransitionActive = false;
+            if (altTransitionSavedGate > 0) {
+                frontend->_hgtInnovGate.set(altTransitionSavedGate);
+            }
+        } else {
+            // Linear interpolation (lerp) between start and target altitude
+            ftype alpha = (ftype)elapsed_ms / (ftype)altTransitionDuration_ms;
+            ftype blended_alt = (1.0f - alpha) * altTransitionStartAlt + alpha * altTransitionTargetAlt;
+            stateStruct.position.z = blended_alt;  // Override EKF height state
+        }
+    }
 
     /*
       this is a check to cope with a vehicle sitting idle on the

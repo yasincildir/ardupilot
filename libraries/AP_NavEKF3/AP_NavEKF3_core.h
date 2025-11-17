@@ -1549,6 +1549,16 @@ private:
     uint32_t lastEkfStateVarLogTime_ms;
     uint32_t lastTimingLogTime_ms;
 
+    // Minimal altitude transition state (GPS↔Indoor, multi-floor, table crossing)
+    // Hard-coded thresholds: 5m change, 0.5 m/s² IMU, 3s blend
+    bool altTransitionActive;
+    uint32_t altTransitionStartTime_ms;
+    ftype altTransitionStartAlt;
+    ftype altTransitionTargetAlt;
+    uint32_t altTransitionDuration_ms;
+    int16_t altTransitionSavedGate;
+    ftype altTransitionPrevRange;
+
     // bits in EK3_AFFINITY
     enum ekf_affinity {
         EKF_AFFINITY_GPS  = (1U<<0),
