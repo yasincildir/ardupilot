@@ -25,12 +25,12 @@ The Indoor Altitude Transition feature handles GPS↔Indoor altitude reference c
 ## How to Enable/Disable
 
 ### Location
-File: `libraries/AP_NavEKF3/AP_NavEKF3_feature.h` (around line 74-76)
+File: `libraries/AP_NavEKF3/AP_NavEKF3_feature.h` (around line 58-60)
 
-**IMPORTANT:** This file contains ALL EKF3 feature flags (beacon fusion, optical flow, etc.). Only modify the indoor altitude transition section at the bottom of the file.
+**IMPORTANT:** This file contains ALL EKF3 feature flags (beacon fusion, body odometry, etc.). Only modify the indoor altitude transition section at the bottom of the file.
 
 ### To DISABLE (Outdoor-only flights)
-Change line 75 in `AP_NavEKF3_feature.h`:
+Change line 59 in `AP_NavEKF3_feature.h`:
 ```cpp
 #ifndef EKF3_INDOOR_ALT_TRANSITION_ENABLED
 #define EKF3_INDOOR_ALT_TRANSITION_ENABLED 0  // Changed from 1 to 0
@@ -38,7 +38,7 @@ Change line 75 in `AP_NavEKF3_feature.h`:
 ```
 
 ### To ENABLE (Indoor flight support)
-Keep default value (line 75):
+Keep default value (line 59):
 ```cpp
 #ifndef EKF3_INDOOR_ALT_TRANSITION_ENABLED
 #define EKF3_INDOOR_ALT_TRANSITION_ENABLED 1  // Default value
