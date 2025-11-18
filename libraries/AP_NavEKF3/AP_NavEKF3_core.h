@@ -1549,6 +1549,7 @@ private:
     uint32_t lastEkfStateVarLogTime_ms;
     uint32_t lastTimingLogTime_ms;
 
+#if EKF3_INDOOR_ALT_TRANSITION_ENABLED
     // Minimal altitude transition state (GPS↔Indoor, multi-floor, table crossing)
     // Hard-coded thresholds: 5m change, 0.5 m/s² IMU, 3s blend
     bool altTransitionActive;
@@ -1558,6 +1559,7 @@ private:
     uint32_t altTransitionDuration_ms;
     int16_t altTransitionSavedGate;
     ftype altTransitionPrevRange;
+#endif // EKF3_INDOOR_ALT_TRANSITION_ENABLED
 
     // bits in EK3_AFFINITY
     enum ekf_affinity {

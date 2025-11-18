@@ -1,6 +1,7 @@
 #include <AP_HAL/AP_HAL.h>
 
 #include "AP_NavEKF3_core.h"
+#include "AP_NavEKF3_feature.h"
 #include <GCS_MAVLink/GCS.h>
 #include <AP_Logger/AP_Logger.h>
 #include <AP_DAL/AP_DAL.h>
@@ -84,6 +85,7 @@ void NavEKF3_core::readRangeFinder(void)
                 // get position in body frame for the current sensor
                 rangeDataNew.sensor_idx = sensorIndex;
 
+#if EKF3_INDOOR_ALT_TRANSITION_ENABLED
                 // MINIMAL ALTITUDE TRANSITION: Detect GPS↔Indoor, multi-floor, table crossing
                 // Hard-coded thresholds: 5m change, 0.5 m/s² IMU, 3s blend
                 if (altTransitionPrevRange > 0.0f && !altTransitionActive) {
@@ -121,6 +123,7 @@ void NavEKF3_core::readRangeFinder(void)
                     }
                 }
                 altTransitionPrevRange = rangeDataNew.rng;
+#endif // EKF3_INDOOR_ALT_TRANSITION_ENABLED
 
                 // write data to buffer with time stamp to be fused when the fusion time horizon catches up with it
                 storedRange.push(rangeDataNew);

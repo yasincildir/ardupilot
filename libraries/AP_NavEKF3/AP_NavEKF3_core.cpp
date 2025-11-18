@@ -732,6 +732,7 @@ void NavEKF3_core::UpdateFilter(bool predict)
     // Wind output forward from the fusion to output time horizon
     calcOutputStates();
 
+#if EKF3_INDOOR_ALT_TRANSITION_ENABLED
     // MINIMAL ALTITUDE TRANSITION: Smooth blend during GPS↔Indoor, multi-floor, table crossing
     if (altTransitionActive) {
         uint32_t elapsed_ms = imuSampleTime_ms - altTransitionStartTime_ms;
@@ -749,6 +750,7 @@ void NavEKF3_core::UpdateFilter(bool predict)
             stateStruct.position.z = blended_alt;  // Override EKF height state
         }
     }
+#endif // EKF3_INDOOR_ALT_TRANSITION_ENABLED
 
     /*
       this is a check to cope with a vehicle sitting idle on the
